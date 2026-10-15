@@ -17,29 +17,19 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
-        String principalName = jwt.getClaimAsString("username");
-        if (principalName == null || principalName.isBlank()) {
-            principalName = jwt.getSubject();
-        }
-        return new JwtAuthenticationToken(jwt, authorities, principalName);
+        return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        Object rolesObj = jwt.getClaims().get("roles");
-        if (rolesObj instanceof Collection<?> roles) {
-            for (Object role : roles) {
-                if (role != null) {
-                    authorities.add(new SimpleGrantedAuthority(role.toString()));
-                }
-            }
-        }
-
         Object rolesPermsObj = jwt.getClaims().get("roles_permissions");
         if (rolesPermsObj instanceof Map<?, ?> rolePermsMap) {
-            for (Object permsObj : rolePermsMap.values()) {
-                if (permsObj instanceof Collection<?> perms) {
+            for (Map.Entry<?, ?> entry : rolePermsMap.entrySet()) {
+                if (entry.getKey() != null) {
+                    authorities.add(new SimpleGrantedAuthority(entry.getKey().toString()));
+                }
+                if (entry.getValue() instanceof Collection<?> perms) {
                     for (Object perm : perms) {
                         if (perm != null) {
                             authorities.add(new SimpleGrantedAuthority(perm.toString()));
