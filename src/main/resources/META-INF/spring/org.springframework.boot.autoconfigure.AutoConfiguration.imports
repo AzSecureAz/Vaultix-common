@@ -1,1 +1,2 @@
 com.vaultix.common.security.TokenBlacklistAutoConfiguration
+com.vaultix.common.security.ResourceServerSecurityAutoConfiguration
