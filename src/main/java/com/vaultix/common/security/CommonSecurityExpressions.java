@@ -4,6 +4,4 @@ public final class CommonSecurityExpressions {
 
     private CommonSecurityExpressions() {
     }
-
-    public static final String IS_ADMIN = "hasRole('ADMIN')";
 }
