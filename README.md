@@ -26,12 +26,14 @@ A standardized JSON envelope returned across all microservices:
   "message": "Operation completed successfully",
   "data": { ... },
   "timestamp": "2026-10-16T12:00:00Z",
-  "errors": null
+  "errors": {
+    "field": "error message"
+  }
 }
 ```
 - **Factory Helpers**:
   - `ApiResponse.success(data)` / `ApiResponse.success(message, data)`
-  - `ApiResponse.error(message)` / `ApiResponse.error(message, errorsList)`
+  - `ApiResponse.error(message)` / `ApiResponse.error(message, Map<String, String> errors)`
 
 ### 2. Client Context Resolution (`ClientContextUtil`)
 Extracts and sanitizes headers injected downstream by the API Gateway:
