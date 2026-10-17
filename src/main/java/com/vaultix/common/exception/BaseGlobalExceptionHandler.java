@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.vaultix.common.dto.ApiResponse;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -50,7 +52,7 @@ public abstract class BaseGlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Validation failed", errors));
     }
-
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
@@ -67,6 +69,7 @@ public abstract class BaseGlobalExceptionHandler {
                 .body(ApiResponse.error("Validation failed", errors));
     }
 
+    /*
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         String paramName = ex.getName();
