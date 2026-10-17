@@ -4,6 +4,8 @@ import java.time.Duration;
 
 public interface TokenBlacklistService {
 
+    String KEY_PREFIX = "auth:blacklist:";
+
     void blacklist(String jti, Duration ttl);
 
     default void blacklist(String jti, long ttlSeconds) {

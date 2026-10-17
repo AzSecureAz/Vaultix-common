@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RedisTokenBlacklistService implements TokenBlacklistService {
 
-    public static final String KEY_PREFIX = "auth:blacklist:";
-
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
