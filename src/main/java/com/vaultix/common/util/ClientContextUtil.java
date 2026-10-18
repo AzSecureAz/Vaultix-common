@@ -29,12 +29,12 @@ public final class ClientContextUtil {
         String clientIp = request.getHeader(CommonHeaders.X_CLIENT_IP);
         if (clientIp != null && !clientIp.isBlank()) {
             int commaIndex = clientIp.indexOf(',');
-            String ip = (commaIndex != -1) ? clientIp.substring(0, commaIndex).trim() : clientIp.trim();
+            String ip = (commaIndex != -1) ? clientIp.substring(0, commaIndex).strip() : clientIp.strip();
             return !ip.isBlank() ? ip : UNKNOWN;
         }
 
         String remoteAddr = request.getRemoteAddr();
-        return (remoteAddr != null && !remoteAddr.isBlank()) ? remoteAddr.trim() : UNKNOWN;
+        return (remoteAddr != null && !remoteAddr.isBlank()) ? remoteAddr.strip() : UNKNOWN;
     }
 
     /**
@@ -51,7 +51,7 @@ public final class ClientContextUtil {
         }
 
         String deviceInfo = request.getHeader(CommonHeaders.X_DEVICE_INFO);
-        return (deviceInfo != null && !deviceInfo.isBlank()) ? deviceInfo.trim() : UNKNOWN;
+        return (deviceInfo != null && !deviceInfo.isBlank()) ? deviceInfo.strip() : UNKNOWN;
     }
 
     /**
@@ -68,7 +68,7 @@ public final class ClientContextUtil {
         }
 
         String location = request.getHeader(CommonHeaders.X_DEVICE_LOCATION);
-        return (location != null && !location.isBlank()) ? location.trim() : UNKNOWN;
+        return (location != null && !location.isBlank()) ? location.strip() : UNKNOWN;
     }
 
     /**
@@ -89,5 +89,16 @@ public final class ClientContextUtil {
      */
     public record ClientContext(String ip, String deviceInfo, String location) {
 
+        public static final ClientContext EMPTY = new ClientContext(UNKNOWN, UNKNOWN, UNKNOWN);
+
+        public ClientContext {
+            ip = (ip != null && !ip.isBlank()) ? ip.strip() : UNKNOWN;
+            deviceInfo = (deviceInfo != null && !deviceInfo.isBlank()) ? deviceInfo.strip() : UNKNOWN;
+            location = (location != null && !location.isBlank()) ? location.strip() : UNKNOWN;
+        }
+
+        public static ClientContext ofNullable(ClientContext context) {
+            return context != null ? context : EMPTY;
+        }
     }
 }

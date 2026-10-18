@@ -18,14 +18,15 @@ public class RedisTokenBlacklistService implements TokenBlacklistService {
         if (jti == null || jti.isBlank()) {
             return;
         }
+        String cleanedJti = jti.strip();
         if (ttl == null || ttl.isNegative() || ttl.isZero()) {
-            log.debug("Skipping blacklisting for jti: {} with non-positive TTL", jti);
+            log.debug("Skipping blacklisting for jti: {} with non-positive TTL", cleanedJti);
             return;
         }
 
-        String key = KEY_PREFIX + jti.trim();
+        String key = KEY_PREFIX + cleanedJti;
         stringRedisTemplate.opsForValue().set(key, "revoked", ttl);
-        log.info("Blacklisted token JTI: {} in Redis for duration: {}s", jti, ttl.toSeconds());
+        log.info("Blacklisted token JTI: {} in Redis for duration: {}s", cleanedJti, ttl.toSeconds());
     }
 
     @Override
@@ -33,7 +34,7 @@ public class RedisTokenBlacklistService implements TokenBlacklistService {
         if (jti == null || jti.isBlank()) {
             return false;
         }
-        String key = KEY_PREFIX + jti.trim();
+        String key = KEY_PREFIX + jti.strip();
         return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key));
     }
 }
