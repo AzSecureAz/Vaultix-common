@@ -5,6 +5,10 @@ import java.util.function.Consumer;
 
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.util.Assert;
+
+import lombok.Builder;
+import lombok.NonNull;
 
 public final class RedisPubSubHelper {
 
@@ -18,15 +22,21 @@ public final class RedisPubSubHelper {
      * @param topicName the Redis channel topic name
      * @param onMessage the callback to invoke with the decoded UTF-8 message
      * payload
+     * @return the Redis message listener container
      */
-    public static void subscribe(
-            RedisMessageListenerContainer container,
+    @Builder
+    public static RedisMessageListenerContainer subscribe(
+            @NonNull RedisMessageListenerContainer container,
             String topicName,
-            Consumer<String> onMessage) {
+            @NonNull Consumer<String> onMessage) {
+
+        Assert.hasText(topicName, "topicName must not be null or blank");
 
         container.addMessageListener((message, pattern) -> {
             String payload = new String(message.getBody(), StandardCharsets.UTF_8);
             onMessage.accept(payload);
         }, new ChannelTopic(topicName));
+
+        return container;
     }
 }
