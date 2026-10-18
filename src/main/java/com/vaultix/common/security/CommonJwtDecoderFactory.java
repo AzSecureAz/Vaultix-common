@@ -51,6 +51,30 @@ public final class CommonJwtDecoderFactory {
 
     /**
      * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
+     * HTTP using only the JWK Set URI. Uses default built-in cache and standard
+     * timestamp validation.
+     *
+     * @param jwkSetUri the remote JWK Set URI
+     * @return the configured JwtDecoder
+     */
+    public static JwtDecoder create(String jwkSetUri) {
+        return create(jwkSetUri, null, null, null);
+    }
+
+    /**
+     * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
+     * HTTP with an expected issuer claim. Uses default built-in cache.
+     *
+     * @param jwkSetUri the remote JWK Set URI
+     * @param expectedIssuer the expected issuer claim ("iss")
+     * @return the configured JwtDecoder
+     */
+    public static JwtDecoder create(String jwkSetUri, String expectedIssuer) {
+        return create(jwkSetUri, null, expectedIssuer, null);
+    }
+
+    /**
+     * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
      * HTTP using the default built-in cache.
      */
     public static JwtDecoder create(
