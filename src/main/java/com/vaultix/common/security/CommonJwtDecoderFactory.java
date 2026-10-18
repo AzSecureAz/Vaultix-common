@@ -16,6 +16,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Builder;
+import lombok.NonNull;
 
 public final class CommonJwtDecoderFactory {
 
@@ -35,7 +36,7 @@ public final class CommonJwtDecoderFactory {
      */
     @Builder(builderMethodName = "withJwkSetUri", builderClassName = "JwkSetUriDecoderBuilder", buildMethodName = "build")
     public static JwtDecoder create(
-            String jwkSetUri,
+            @NonNull String jwkSetUri,
             Cache cache,
             String expectedIssuer,
             JwtBlacklistValidator blacklistValidator) {
@@ -68,11 +69,9 @@ public final class CommonJwtDecoderFactory {
      */
     @Builder(builderMethodName = "withJwkSource", builderClassName = "JwkSourceDecoderBuilder", buildMethodName = "build")
     public static JwtDecoder create(
-            JWKSource<SecurityContext> jwkSource,
+            @NonNull JWKSource<SecurityContext> jwkSource,
             String expectedIssuer,
             JwtBlacklistValidator blacklistValidator) {
-
-        Assert.notNull(jwkSource, "jwkSource must not be null");
 
         DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
         jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, jwkSource));
@@ -98,11 +97,9 @@ public final class CommonJwtDecoderFactory {
      */
     @Builder(builderMethodName = "withValidators", builderClassName = "ValidatorBuilder", buildMethodName = "build")
     public static NimbusJwtDecoder configureValidators(
-            NimbusJwtDecoder decoder,
+            @NonNull NimbusJwtDecoder decoder,
             String expectedIssuer,
             JwtBlacklistValidator blacklistValidator) {
-
-        Assert.notNull(decoder, "decoder must not be null");
 
         OAuth2TokenValidator<Jwt> defaultValidator = expectedIssuer != null && !expectedIssuer.isBlank()
                 ? JwtValidators.createDefaultWithIssuer(expectedIssuer)
