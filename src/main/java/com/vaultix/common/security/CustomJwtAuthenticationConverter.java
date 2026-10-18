@@ -14,29 +14,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
+@Builder
+@AllArgsConstructor
 public class CustomJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final RoleRevocationService roleRevocationService;
     private final PermissionRevocationService permissionRevocationService;
-
-    public CustomJwtAuthenticationConverter() {
-        this(null, null);
-    }
-
-    public CustomJwtAuthenticationConverter(RoleRevocationService roleRevocationService) {
-        this(roleRevocationService, null);
-    }
-
-    public CustomJwtAuthenticationConverter(PermissionRevocationService permissionRevocationService) {
-        this(null, permissionRevocationService);
-    }
-
-    public CustomJwtAuthenticationConverter(
-            RoleRevocationService roleRevocationService,
-            PermissionRevocationService permissionRevocationService) {
-        this.roleRevocationService = roleRevocationService;
-        this.permissionRevocationService = permissionRevocationService;
-    }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
