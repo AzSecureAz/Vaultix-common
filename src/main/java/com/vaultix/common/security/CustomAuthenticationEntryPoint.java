@@ -14,14 +14,18 @@ import com.vaultix.common.dto.ApiResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    @NonNull
     private final ObjectMapper objectMapper;
 
     @Override

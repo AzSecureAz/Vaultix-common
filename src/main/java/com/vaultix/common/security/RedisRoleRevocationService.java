@@ -3,7 +3,6 @@ package com.vaultix.common.security;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.ApplicationArguments;
@@ -13,27 +12,25 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Builder
+@AllArgsConstructor
 public class RedisRoleRevocationService implements RoleRevocationService, ApplicationRunner {
 
+    @NonNull
     private final StringRedisTemplate stringRedisTemplate;
-    private final Cache<String, Instant> cache;
 
-    public RedisRoleRevocationService(StringRedisTemplate stringRedisTemplate) {
-        this(stringRedisTemplate, Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)
-                .maximumSize(10_000)
-                .build());
-    }
-
-    public RedisRoleRevocationService(
-            StringRedisTemplate stringRedisTemplate,
-            Cache<String, Instant> cache) {
-        this.stringRedisTemplate = Objects.requireNonNull(stringRedisTemplate, "stringRedisTemplate must not be null");
-        this.cache = Objects.requireNonNull(cache, "cache must not be null");
-    }
+    @NonNull
+    @Builder.Default
+    private final Cache<String, Instant> cache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
 
     @Override
     public void run(ApplicationArguments args) {

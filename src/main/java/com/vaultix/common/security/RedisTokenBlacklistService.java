@@ -4,13 +4,17 @@ import java.time.Duration;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class RedisTokenBlacklistService implements TokenBlacklistService {
 
+    @NonNull
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override

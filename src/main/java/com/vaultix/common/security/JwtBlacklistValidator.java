@@ -5,13 +5,17 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class JwtBlacklistValidator implements OAuth2TokenValidator<Jwt> {
 
+    @NonNull
     private final TokenBlacklistService tokenBlacklistService;
 
     @Override
