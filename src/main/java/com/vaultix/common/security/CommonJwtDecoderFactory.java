@@ -15,6 +15,8 @@ import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
+import lombok.Builder;
+
 public final class CommonJwtDecoderFactory {
 
     private CommonJwtDecoderFactory() {
@@ -31,6 +33,7 @@ public final class CommonJwtDecoderFactory {
      * @param blacklistValidator optional Redis JWT blacklist validator
      * @return the configured JwtDecoder
      */
+    @Builder(builderMethodName = "withJwkSetUri", builderClassName = "JwkSetUriDecoderBuilder", buildMethodName = "build")
     public static JwtDecoder create(
             String jwkSetUri,
             Cache cache,
@@ -45,43 +48,11 @@ public final class CommonJwtDecoderFactory {
         }
 
         NimbusJwtDecoder decoder = builder.build();
-        configureValidators(decoder, expectedIssuer, blacklistValidator);
-        return decoder;
-    }
-
-    /**
-     * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
-     * HTTP using only the JWK Set URI. Uses default built-in cache and standard
-     * timestamp validation.
-     *
-     * @param jwkSetUri the remote JWK Set URI
-     * @return the configured JwtDecoder
-     */
-    public static JwtDecoder create(String jwkSetUri) {
-        return create(jwkSetUri, null, null, null);
-    }
-
-    /**
-     * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
-     * HTTP with an expected issuer claim. Uses default built-in cache.
-     *
-     * @param jwkSetUri the remote JWK Set URI
-     * @param expectedIssuer the expected issuer claim ("iss")
-     * @return the configured JwtDecoder
-     */
-    public static JwtDecoder create(String jwkSetUri, String expectedIssuer) {
-        return create(jwkSetUri, null, expectedIssuer, null);
-    }
-
-    /**
-     * Convenience method to build a NimbusJwtDecoder fetching remote JWKS over
-     * HTTP using the default built-in cache.
-     */
-    public static JwtDecoder create(
-            String jwkSetUri,
-            String expectedIssuer,
-            JwtBlacklistValidator blacklistValidator) {
-        return create(jwkSetUri, null, expectedIssuer, blacklistValidator);
+        return withValidators()
+                .decoder(decoder)
+                .expectedIssuer(expectedIssuer)
+                .blacklistValidator(blacklistValidator)
+                .build();
     }
 
     /**
@@ -95,6 +66,7 @@ public final class CommonJwtDecoderFactory {
      * @param blacklistValidator optional Redis JWT blacklist validator
      * @return the configured JwtDecoder
      */
+    @Builder(builderMethodName = "withJwkSource", builderClassName = "JwkSourceDecoderBuilder", buildMethodName = "build")
     public static JwtDecoder create(
             JWKSource<SecurityContext> jwkSource,
             String expectedIssuer,
@@ -108,14 +80,29 @@ public final class CommonJwtDecoderFactory {
         });
 
         NimbusJwtDecoder decoder = new NimbusJwtDecoder(jwtProcessor);
-        configureValidators(decoder, expectedIssuer, blacklistValidator);
-        return decoder;
+        return withValidators()
+                .decoder(decoder)
+                .expectedIssuer(expectedIssuer)
+                .blacklistValidator(blacklistValidator)
+                .build();
     }
 
-    private static void configureValidators(
+    /**
+     * Configures the standard Vaultix JWT token validators (issuer and optional
+     * Redis blacklist) on a NimbusJwtDecoder.
+     *
+     * @param decoder the NimbusJwtDecoder to configure
+     * @param expectedIssuer the expected issuer claim ("iss")
+     * @param blacklistValidator optional Redis JWT blacklist validator
+     * @return the configured NimbusJwtDecoder
+     */
+    @Builder(builderMethodName = "withValidators", builderClassName = "ValidatorBuilder", buildMethodName = "build")
+    public static NimbusJwtDecoder configureValidators(
             NimbusJwtDecoder decoder,
             String expectedIssuer,
             JwtBlacklistValidator blacklistValidator) {
+
+        Assert.notNull(decoder, "decoder must not be null");
 
         OAuth2TokenValidator<Jwt> defaultValidator = expectedIssuer != null && !expectedIssuer.isBlank()
                 ? JwtValidators.createDefaultWithIssuer(expectedIssuer)
@@ -126,5 +113,6 @@ public final class CommonJwtDecoderFactory {
                 : defaultValidator;
 
         decoder.setJwtValidator(delegatingValidator);
+        return decoder;
     }
 }

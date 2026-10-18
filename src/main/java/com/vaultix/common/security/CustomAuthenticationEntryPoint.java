@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -30,7 +31,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             AuthenticationException authException) throws IOException {
 
         String description = "Authentication required";
-        if (authException instanceof OAuth2AuthenticationException oauth2Ex && oauth2Ex.getError() != null && oauth2Ex.getError().getDescription() != null) {
+        if (authException instanceof InternalAuthenticationServiceException) {
+            description = "Authentication failed";
+        } else if (authException instanceof OAuth2AuthenticationException oauth2Ex && oauth2Ex.getError() != null && oauth2Ex.getError().getDescription() != null) {
             description = oauth2Ex.getError().getDescription();
         } else if (authException != null && authException.getMessage() != null && !authException.getMessage().isBlank()) {
             description = authException.getMessage();
