@@ -3,6 +3,7 @@ package com.vaultix.common.exception;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,8 +11,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.vaultix.common.dto.ApiResponse;
 
@@ -37,7 +40,6 @@ public abstract class BaseGlobalExceptionHandler {
                 .body(ApiResponse.error("Validation failed", errors));
     }
 
-    /*
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
@@ -53,7 +55,7 @@ public abstract class BaseGlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Validation failed", errors));
     }
-     */
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
