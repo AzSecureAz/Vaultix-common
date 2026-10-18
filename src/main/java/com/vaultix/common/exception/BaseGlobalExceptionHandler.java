@@ -15,6 +15,7 @@ import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.vaultix.common.dto.ApiResponse;
 
@@ -72,7 +73,6 @@ public abstract class BaseGlobalExceptionHandler {
                 .body(ApiResponse.error("Validation failed", errors));
     }
 
-    /*
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         String paramName = ex.getName();
@@ -83,7 +83,7 @@ public abstract class BaseGlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Invalid parameter type", Map.of(paramName, errorMessage)));
     }
-     */
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         log.warn("Malformed HTTP request body: {}", ex.getMessage());
