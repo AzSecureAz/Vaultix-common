@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -39,8 +40,9 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
+        UUID actorId = SecurityUtil.extractActorId(jwt);
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
-        return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
+        return new JwtAuthenticationToken(jwt, authorities, actorId.toString());
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
