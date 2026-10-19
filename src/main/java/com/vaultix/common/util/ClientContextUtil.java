@@ -3,6 +3,7 @@ package com.vaultix.common.util;
 import com.vaultix.common.constant.CommonHeaders;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 
 public final class ClientContextUtil {
 
@@ -87,9 +88,10 @@ public final class ClientContextUtil {
      * Strongly typed record representing the client execution context forwarded
      * by the gateway.
      */
+    @Builder
     public record ClientContext(String ip, String deviceInfo, String location) {
 
-        public static final ClientContext EMPTY = new ClientContext(UNKNOWN, UNKNOWN, UNKNOWN);
+        public static final ClientContext EMPTY = builder().build();
 
         public ClientContext {
             ip = (ip != null && !ip.isBlank()) ? ip.strip() : UNKNOWN;
