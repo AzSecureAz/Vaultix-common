@@ -1,7 +1,10 @@
 package com.vaultix.common.exception;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vaultix.common.dto.ApiResponse;
 
 import jakarta.validation.ConstraintViolation;
@@ -27,14 +31,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class BaseGlobalExceptionHandler {
 
+    private static final Map<String, String> FIELD_NAME_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, String> SNAKE_CASE_CACHE = new ConcurrentHashMap<>();
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
+        Object target = ex.getBindingResult().getTarget();
+
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            errors.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage());
+            String fieldKey = resolveJsonFieldName(target, fieldError.getField());
+            errors.putIfAbsent(fieldKey, fieldError.getDefaultMessage());
         }
         for (ObjectError globalError : ex.getBindingResult().getGlobalErrors()) {
-            errors.putIfAbsent(globalError.getObjectName(), globalError.getDefaultMessage());
+            errors.putIfAbsent(toSnakeCase(globalError.getObjectName()), globalError.getDefaultMessage());
         }
         log.warn("Validation failed for request: {}", errors);
         return ResponseEntity
@@ -47,7 +57,7 @@ public abstract class BaseGlobalExceptionHandler {
         Map<String, String> errors = new LinkedHashMap<>();
         for (ParameterValidationResult result : ex.getParameterValidationResults()) {
             String paramName = result.getMethodParameter().getParameterName();
-            String fieldKey = paramName != null ? paramName : "parameter";
+            String fieldKey = paramName != null ? toSnakeCase(paramName) : "parameter";
             for (MessageSourceResolvable error : result.getResolvableErrors()) {
                 errors.putIfAbsent(fieldKey, error.getDefaultMessage());
             }
@@ -66,7 +76,7 @@ public abstract class BaseGlobalExceptionHandler {
             String fieldName = propertyPath.contains(".")
                     ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
                     : propertyPath;
-            errors.putIfAbsent(fieldName, violation.getMessage());
+            errors.putIfAbsent(toSnakeCase(fieldName), violation.getMessage());
         }
         log.warn("Constraint violation: {}", errors);
         return ResponseEntity
@@ -76,7 +86,7 @@ public abstract class BaseGlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
-        String paramName = ex.getName();
+        String paramName = toSnakeCase(ex.getName());
         String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "valid type";
         String errorMessage = String.format("Parameter '%s' should be of type %s", paramName, expectedType);
         log.warn("Method argument type mismatch: {}", errorMessage);
@@ -154,5 +164,69 @@ public abstract class BaseGlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("An internal server error occurred. Please try again later."));
+    }
+
+    protected String resolveJsonFieldName(Object target, String fieldName) {
+        if (fieldName == null || fieldName.isBlank()) {
+            return "field";
+        }
+        if (target == null) {
+            return toSnakeCase(fieldName);
+        }
+
+        String cacheKey = target.getClass().getName() + "#" + fieldName;
+        return FIELD_NAME_CACHE.computeIfAbsent(cacheKey, k -> {
+            Class<?> clazz = target.getClass();
+
+            if (clazz.isRecord()) {
+                for (RecordComponent rc : clazz.getRecordComponents()) {
+                    if (rc.getName().equals(fieldName)) {
+                        JsonProperty jsonProp = rc.getAnnotation(JsonProperty.class);
+                        if (jsonProp != null && !jsonProp.value().isBlank()) {
+                            return jsonProp.value();
+                        }
+                    }
+                }
+            }
+
+            Class<?> current = clazz;
+            while (current != null && current != Object.class) {
+                try {
+                    Field declaredField = current.getDeclaredField(fieldName);
+                    JsonProperty jsonProp = declaredField.getAnnotation(JsonProperty.class);
+                    if (jsonProp != null && !jsonProp.value().isBlank()) {
+                        return jsonProp.value();
+                    }
+                    break;
+                } catch (NoSuchFieldException ignored) {
+                    current = current.getSuperclass();
+                }
+            }
+
+            return toSnakeCase(fieldName);
+        });
+    }
+
+    protected static String toSnakeCase(String input) {
+        if (input == null || input.isBlank()) {
+            return input;
+        }
+        return SNAKE_CASE_CACHE.computeIfAbsent(input, BaseGlobalExceptionHandler::computeSnakeCase);
+    }
+
+    private static String computeSnakeCase(String input) {
+        StringBuilder result = new StringBuilder(input.length() + 5);
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > 0 && input.charAt(i - 1) != '_' && input.charAt(i - 1) != '.' && input.charAt(i - 1) != '-') {
+                    result.append('_');
+                }
+                result.append(Character.toLowerCase(c));
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 }
