@@ -60,7 +60,9 @@ An extensible base `@RestControllerAdvice` class for all downstream services to 
 - **`BadRequestException`**: Runtime exception thrown for business-level validation errors, returning `400 Bad Request`.
 - **`ResourceNotFoundException`**: Runtime exception thrown when a requested entity is missing, returning `404 Not Found`.
 - **`ResourceConflictException`**: Runtime exception thrown for state or identity conflicts (e.g. duplicate username/email), returning `409 Conflict`.
+- **`SNAKE_CASE` Error Alignment**: Converts all validation field names and violation property paths to `snake_case` using a cached linear transformation (`SNAKE_CASE_CACHE` via `ConcurrentHashMap`), ensuring error keys strictly match the platform's JSON naming strategy without relying on reflection.
 - **Unhandled Exceptions**: Replaces unhandled exceptions with a generic `500 Internal Server Error`, hiding sensitive server stack traces from API clients.
+
 
 ---
 
@@ -132,6 +134,13 @@ Located in `com.vaultix.common.security.SecurityUtil`. Provides static helper fu
 
 ---
 
+### 8. Cross-Service Notification Contracts (`NotificationEvent` & `NotificationChannel`)
+Provides standard, immutable DTO records with Bean Validation for platform-wide event-driven messaging:
+- **`NotificationChannel`**: Enum defining delivery mediums (`EMAIL`, `SMS`, `PUSH`, `IN_APP`).
+- **`NotificationEvent`**: Record payload dispatched across RabbitMQ topic exchanges, carrying `eventId` (UUID), `templateCode` (e.g. `auth.password-reset`), `channel`, `recipient`, `recipientName`, `subject`, `params` map, and `createdAt` timestamp.
+
+---
+
 ## Directory Structure
 
 ```
@@ -145,7 +154,10 @@ common/
     ├── crypto/
     │   └── AesGcmCryptoUtil.java
     ├── dto/
-    │   └── ApiResponse.java
+    │   ├── ApiResponse.java
+    │   └── notification/
+    │       ├── NotificationChannel.java
+    │       └── NotificationEvent.java
     ├── exception/
     │   ├── BadRequestException.java
     │   ├── BaseGlobalExceptionHandler.java
