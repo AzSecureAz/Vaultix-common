@@ -128,9 +128,10 @@ RedisPubSubHelper.builder()
 
 ---
 
-### 7. Security Utilities (`SecurityUtil`)
-Located in `com.vaultix.common.security.SecurityUtil`. Provides static helper functions for extracting and validating authenticated principal identity:
-- `SecurityUtil.extractActorId(jwt)` &rarr; `UUID` (extracts and validates the subject UUID from `Jwt`, throwing `BadCredentialsException` if the token is null, missing, blank, or malformed)
+### 7. Security Utilities (`SecurityUtil` & `CommonSecurityExpressions`)
+Located in `com.vaultix.common.security`. Provides static helper functions and security constants:
+- `SecurityUtil.extractActorId(jwt)` &rarr; `UUID` (extracts and validates the subject UUID from `Jwt`, throwing `BadCredentialsException` if the token is null, missing, blank, or malformed).
+- `CommonSecurityExpressions.IS_ADMIN` &rarr; `"hasRole('ADMIN')"` standard SpEL security expression for `@PreAuthorize` rules.
 
 ---
 
