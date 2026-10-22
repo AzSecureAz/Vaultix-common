@@ -16,6 +16,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -56,16 +57,39 @@ public abstract class BaseGlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
         for (ParameterValidationResult result : ex.getParameterValidationResults()) {
-            String paramName = result.getMethodParameter().getParameterName();
-            String fieldKey = paramName != null ? toSnakeCase(paramName) : "parameter";
+            if (result == null) {
+                continue;
+            }
+            String paramName = result.getMethodParameter() != null ? result.getMethodParameter().getParameterName() : null;
+            if (result.getResolvableErrors() == null) {
+                continue;
+            }
             for (MessageSourceResolvable error : result.getResolvableErrors()) {
-                errors.putIfAbsent(fieldKey, error.getDefaultMessage());
+                if (error == null) {
+                    continue;
+                }
+                String fieldKey;
+                if (error instanceof FieldError fe) {
+                    fieldKey = resolveJsonFieldName(result.getArgument(), fe.getField());
+                } else {
+                    fieldKey = paramName != null ? toSnakeCase(paramName) : "parameter";
+                }
+                String defaultMessage = error.getDefaultMessage();
+                errors.putIfAbsent(fieldKey, defaultMessage != null && !defaultMessage.isBlank() ? defaultMessage : "Invalid value");
             }
         }
         log.warn("Method parameter validation failed: {}", errors);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Validation failed", errors));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        log.warn("HTTP method not supported: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
