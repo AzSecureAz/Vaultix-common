@@ -84,7 +84,7 @@ Extracts and sanitizes headers injected downstream by the API Gateway:
 
 ---
 
-### 4. Cryptographic Utilities (`AesGcmCryptoUtil` & `TotpUtil`)
+### 4. Cryptographic Utilities (`AesGcmCryptoUtil`, `TotpUtil` & `RecoveryCodeUtil`)
 - **`AesGcmCryptoUtil`**: Authenticated encryption using standard **AES-256 GCM**:
   - Secure 12-byte IV generation per encryption operation.
   - Constant-time MAC authentication verification against tampering.
@@ -94,6 +94,10 @@ Extracts and sanitizes headers injected downstream by the API Gateway:
   - Native RFC 4648 Base32 encoding and decoding with zero external dependencies.
   - Formats standard `otpauth://totp/...` URIs for Google Authenticator / 1Password.
   - Constant-time code verification with configurable window tolerance and replay protection (`verifyCodeAndGetStep`).
+- **`RecoveryCodeUtil`**: High-entropy, pure Java generation of **MFA Emergency Recovery Codes**:
+  - Uses `SecureRandom` over an unambiguous 32-character alphabet (excludes `0/O`, `1/l`).
+  - Generates human-friendly, formatted codes (e.g. `xxxxx-xxxxx`).
+  - Provides normalization (`normalizeCode`) and formatting (`formatCode`) routines for user entry matching.
 
 ---
 
@@ -159,6 +163,7 @@ common/
     │   └── SecurityTopics.java
     ├── crypto/
     │   ├── AesGcmCryptoUtil.java
+    │   ├── RecoveryCodeUtil.java
     │   └── TotpUtil.java
     ├── dto/
     │   ├── ApiResponse.java
