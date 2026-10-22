@@ -84,11 +84,16 @@ Extracts and sanitizes headers injected downstream by the API Gateway:
 
 ---
 
-### 4. Cryptographic Utilities (`AesGcmCryptoUtil`)
-Authenticated encryption using standard **AES-256 GCM**:
-- Secure 12-byte IV generation per encryption operation.
-- Constant-time MAC authentication verification against tampering.
-- Base64-encoded URL-safe payloads.
+### 4. Cryptographic Utilities (`AesGcmCryptoUtil` & `TotpUtil`)
+- **`AesGcmCryptoUtil`**: Authenticated encryption using standard **AES-256 GCM**:
+  - Secure 12-byte IV generation per encryption operation.
+  - Constant-time MAC authentication verification against tampering.
+  - Base64-encoded URL-safe payloads.
+- **`TotpUtil`**: Stateless, pure Java implementation of **RFC 6238 (TOTP)** and **RFC 4226 (HOTP)**:
+  - Generates cryptographically secure 160-bit Base32 secrets.
+  - Native RFC 4648 Base32 encoding and decoding with zero external dependencies.
+  - Formats standard `otpauth://totp/...` URIs for Google Authenticator / 1Password.
+  - Constant-time code verification with configurable window tolerance and replay protection (`verifyCodeAndGetStep`).
 
 ---
 
@@ -153,7 +158,8 @@ common/
     │   ├── CommonHeaders.java
     │   └── SecurityTopics.java
     ├── crypto/
-    │   └── AesGcmCryptoUtil.java
+    │   ├── AesGcmCryptoUtil.java
+    │   └── TotpUtil.java
     ├── dto/
     │   ├── ApiResponse.java
     │   └── notification/
