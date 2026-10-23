@@ -151,7 +151,7 @@ Provides standard, immutable DTO records with Bean Validation for platform-wide 
 
 ---
 
-### 8. PII Masking Utilities (`MaskUtil`)
+### 9. PII Masking Utilities (`MaskUtil`)
 Centralized string masking for personally identifiable information (PII) before emitting log statements, previews, or challenges:
 - **`MaskUtil.maskEmail(email)`**: Converts `vimal@gmail.com` to `v***l@gmail.com`. Safely handles short local parts (`a@example.com` &rarr; `a***@example.com`, `ab@example.com` &rarr; `a***b@example.com`).
 - **`MaskUtil.maskPhone(phone)`**: Retains only the last 4 digits (e.g. `******7890`).
