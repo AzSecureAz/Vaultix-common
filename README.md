@@ -56,7 +56,7 @@ An extensible base `@RestControllerAdvice` class for all downstream services to 
 - **`MethodArgumentTypeMismatchException`**: Sanitizes type conversion failures into clear descriptive field error messages (`400 Bad Request`).
 - **`HttpMessageNotReadableException`**: Replaces raw Jackson parser exceptions with `"Malformed JSON request body"` (`400 Bad Request`).
 - **`AuthenticationException`**: Replaces raw authentication errors with `"Authentication required"`. Critically masks `InternalAuthenticationServiceException` as `"Authentication failed"` to prevent leaking database or backend connection details (`401 Unauthorized`).
-- **`AccessDeniedException`**: Emits `403 Forbidden` with `"Access denied: You do not have permission to access this resource"`.
+- **`AccessDeniedException`**: Emits `403 Forbidden` with the specific detail message when thrown explicitly by service-level privilege/hierarchy checks, while cleanly defaulting generic Spring Security `@PreAuthorize` rejections to `"Access denied: You do not have permission to access this resource"`.
 - **`BadRequestException`**: Runtime exception thrown for business-level validation errors, returning `400 Bad Request`.
 - **`ResourceNotFoundException`**: Runtime exception thrown when a requested entity is missing, returning `404 Not Found`.
 - **`ResourceConflictException`**: Runtime exception thrown for state or identity conflicts (e.g. duplicate username/email), returning `409 Conflict`.
