@@ -28,4 +28,27 @@ public final class SecurityUtil {
             throw new BadCredentialsException("Invalid actor ID in authentication token");
         }
     }
+
+    /**
+     * Extracts and validates the session ID (sid claim) from a JWT token.
+     *
+     * @param jwt the authenticated JWT token
+     * @return the parsed session UUID
+     * @throws BadCredentialsException if the token is null, sid claim is
+     * missing/blank, or sid is not a valid UUID
+     */
+    public static UUID extractSessionId(Jwt jwt) {
+        if (jwt == null) {
+            throw new BadCredentialsException("Invalid or missing authentication token");
+        }
+        String sid = jwt.getClaimAsString("sid");
+        if (sid == null || sid.isBlank()) {
+            throw new BadCredentialsException("Missing session ID in authentication token");
+        }
+        try {
+            return UUID.fromString(sid.strip());
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Invalid session ID in authentication token");
+        }
+    }
 }

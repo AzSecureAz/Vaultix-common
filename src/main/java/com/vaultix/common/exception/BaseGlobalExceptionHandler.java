@@ -166,6 +166,19 @@ public abstract class BaseGlobalExceptionHandler {
                 .body(ApiResponse.error(message));
     }
 
+    @ExceptionHandler(SudoRequiredException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSudoRequiredException(SudoRequiredException ex) {
+        log.warn("Sudo authentication required: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .header("X-Sudo-Required", "true")
+                .body(ApiResponse.error(
+                        ex.getMessage() != null && !ex.getMessage().isBlank()
+                        ? ex.getMessage()
+                        : SudoRequiredException.DEFAULT_MESSAGE,
+                        Map.of("code", "SUDO_REQUIRED")));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadRequestException(BadRequestException ex) {
         log.warn("Bad request: {}", ex.getMessage());
