@@ -22,7 +22,7 @@ Detailed module guides, class contracts, and cryptographic specifications are ma
 
 | Document | Description |
 | :--- | :--- |
-| 📖 [**Modules & Capabilities Guide**](docs/MODULES.md) | In-depth breakdown of all 9 core library modules: Unified API responses (`ApiResponse<T>`), Centralized exception handling (`BaseGlobalExceptionHandler`), Client context resolution, Pure Java RFC 6238/4226 TOTP & AES-256 GCM crypto, Spring Security Resource Server suite, Redis Pub/Sub invalidation, Security expressions, Notification event contracts, and PII masking. |
+| 📖 [**Modules & Capabilities Guide**](docs/MODULES.md) | In-depth breakdown of all 10 core library modules: Unified API responses (`ApiResponse<T>`), Centralized exception handling (`BaseGlobalExceptionHandler`), Client context resolution, Pure Java RFC 6238/4226 TOTP & AES-256 GCM crypto, Spring Security Resource Server suite, Redis Pub/Sub invalidation, Security expressions, Notification event contracts, PII masking, and Sudo elevated session verification (`SudoService`, `@RequireSudo`, `RequireSudoAspect`). |
 
 ---
 
@@ -51,7 +51,8 @@ common/
     │   ├── BadRequestException.java
     │   ├── BaseGlobalExceptionHandler.java
     │   ├── ResourceConflictException.java
-    │   └── ResourceNotFoundException.java
+    │   ├── ResourceNotFoundException.java
+    │   └── SudoRequiredException.java
     ├── security/
     │   ├── CommonJwtDecoderFactory.java
     │   ├── CommonSecurityExpressions.java
@@ -62,9 +63,13 @@ common/
     │   ├── PermissionRevocationService.java
     │   ├── RedisPermissionRevocationService.java
     │   ├── RedisRoleRevocationService.java
+    │   ├── RedisSudoService.java
     │   ├── RedisTokenBlacklistService.java
+    │   ├── RequireSudo.java
+    │   ├── RequireSudoAspect.java
     │   ├── RoleRevocationService.java
     │   ├── SecurityUtil.java
+    │   ├── SudoService.java
     │   └── TokenBlacklistService.java
     └── util/
         ├── ClientContextUtil.java

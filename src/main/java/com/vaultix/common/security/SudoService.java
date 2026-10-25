@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public interface SudoService {
 
-    String KEY_PREFIX = "sudo:session:";
+    String KEY_PREFIX = "auth:sudo:session:";
     Duration DEFAULT_SUDO_DURATION = Duration.ofMinutes(5);
 
     /**

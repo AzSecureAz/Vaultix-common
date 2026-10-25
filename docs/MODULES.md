@@ -46,6 +46,7 @@ An extensible base `@RestControllerAdvice` class for all downstream services to 
 - **`BadRequestException`**: Runtime exception thrown for business-level validation errors, returning `400 Bad Request`.
 - **`ResourceNotFoundException`**: Runtime exception thrown when a requested entity is missing, returning `404 Not Found`.
 - **`ResourceConflictException`**: Runtime exception thrown for state or identity conflicts (e.g. duplicate username/email), returning `409 Conflict`.
+- **`SudoRequiredException`**: Runtime exception thrown when an elevated sudo operation is attempted without an active or unexpired elevated session. Returns `403 Forbidden` with response header `X-Sudo-Required: true` and standardized error code `SUDO_REQUIRED`.
 - **`SNAKE_CASE` Error Alignment**: Converts all validation field names and violation property paths to `snake_case` using a cached linear transformation (`SNAKE_CASE_CACHE` via `ConcurrentHashMap`), ensuring error keys strictly match the platform's JSON naming strategy without relying on reflection.
 - **Unhandled Exceptions**: Replaces unhandled exceptions with a generic `500 Internal Server Error`, hiding sensitive server stack traces from API clients.
 
@@ -141,3 +142,25 @@ Centralized string masking for personally identifiable information (PII) before 
 - **`MaskUtil.maskEmail(email)`**: Converts `vimal@gmail.com` to `v***l@gmail.com`. Safely handles short local parts (`a@example.com` &rarr; `a***@example.com`, `ab@example.com` &rarr; `a***b@example.com`).
 - **`MaskUtil.maskPhone(phone)`**: Retains only the last 4 digits (e.g. `******7890`).
 - **`MaskUtil.maskUsername(username)`**: Masks usernames (e.g. `vimalkumar` &rarr; `v***r`), automatically delegating to `maskEmail` if an `@` character is detected.
+
+---
+
+## 10. Elevated Privilege & Sudo Session Management (`SudoService`, `@RequireSudo` & `RequireSudoAspect`)
+Provides an enterprise step-up authentication and sudo elevation framework for highly sensitive operations:
+
+1. **`SudoService`**:
+   - Manages active sudo sessions stored in Redis under the `auth:sudo:session:<sessionId>` keyspace.
+   - Default elevation duration: 5 minutes (`DEFAULT_SUDO_DURATION`).
+   - Supports custom elevation TTLs via `elevateSudo(UUID sessionId, Duration ttl)`.
+   - Validates active elevations via `isSudoActive(UUID sessionId)` and max-age constrained freshness via `isSudoActive(UUID sessionId, long maxAgeSeconds)`.
+   - Allows explicit elevation revocation via `revokeSudo(UUID sessionId)`.
+2. **`RedisSudoService`**:
+   - Redis-backed implementation writing UTC epoch milliseconds to Redis keys with an automatic Redis TTL.
+   - Evaluates max age restrictions in constant-time integer arithmetic.
+3. **`@RequireSudo`**:
+   - Annotation applicable to controller classes or methods requiring active elevated sudo privileges.
+   - Accepts an optional `maxAgeSeconds` attribute (defaults to `0` for service-wide default TTL).
+4. **`RequireSudoAspect`**:
+   - Spring AOP `@Around` aspect enforcing `@RequireSudo` rules across controller methods.
+   - Extracts the session identifier (`sid` claim) from the authenticated `Jwt` principal.
+   - Throws `SudoRequiredException` if the session is missing, unauthenticated, or has expired beyond the allowed threshold.
