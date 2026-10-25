@@ -60,6 +60,16 @@ public final class MaskUtil {
     }
 
     /**
+     * Alias for {@link #maskPhone(String)} to support phone number masking.
+     *
+     * @param phone raw phone number string
+     * @return masked phone number or empty string if input is null or blank
+     */
+    public static String maskPhoneNumber(String phone) {
+        return maskPhone(phone);
+    }
+
+    /**
      * Masks a username for privacy and security previews (e.g., v***l). If the
      * input contains an '@' character, delegates to maskEmail.
      *
