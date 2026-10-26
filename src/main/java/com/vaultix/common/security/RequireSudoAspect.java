@@ -11,8 +11,6 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import com.vaultix.common.exception.SudoRequiredException;
 
@@ -42,8 +40,7 @@ public class RequireSudoAspect {
             throw new BadCredentialsException("Unauthenticated request");
         }
 
-        Jwt jwt = extractJwt(authentication);
-        UUID sessionId = SecurityUtil.extractSessionId(jwt);
+        UUID sessionId = SecurityUtil.extractSessionId(authentication);
 
         long maxAgeSeconds = requireSudo.maxAgeSeconds();
         boolean sudoActive = sudoService.isSudoActive(sessionId, maxAgeSeconds);
@@ -72,15 +69,5 @@ public class RequireSudoAspect {
         }
 
         return null;
-    }
-
-    private Jwt extractJwt(Authentication authentication) {
-        if (authentication.getPrincipal() instanceof Jwt principalJwt) {
-            return principalJwt;
-        }
-        if (authentication instanceof JwtAuthenticationToken jwtAuthToken) {
-            return jwtAuthToken.getToken();
-        }
-        throw new BadCredentialsException("Authentication principal is not a valid JWT token");
     }
 }
