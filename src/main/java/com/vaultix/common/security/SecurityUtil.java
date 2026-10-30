@@ -61,6 +61,32 @@ public final class SecurityUtil {
     }
 
     /**
+     * Extracts and validates the token ID (jti) directly from an Authentication
+     * object.
+     *
+     * @param authentication the Spring Security Authentication object
+     * @return the parsed token JTI UUID
+     * @throws BadCredentialsException if authentication is invalid or jti is
+     * missing/malformed
+     */
+    public static UUID extractTokenId(Authentication authentication) {
+        return extractTokenId(extractJwt(authentication));
+    }
+
+    /**
+     * Extracts and validates the token ID (jti) directly from an Authentication
+     * object.
+     *
+     * @param authentication the Spring Security Authentication object
+     * @return the parsed token JTI UUID
+     * @throws BadCredentialsException if authentication is invalid or jti is
+     * missing/malformed
+     */
+    public static UUID extractJti(Authentication authentication) {
+        return extractTokenId(authentication);
+    }
+
+    /**
      * Extracts and validates the subject UUID (actor/user ID) from a JWT token.
      *
      * @param jwt the authenticated JWT token
@@ -100,5 +126,36 @@ public final class SecurityUtil {
         } catch (IllegalArgumentException e) {
             throw new BadCredentialsException("Invalid session ID in authentication token");
         }
+    }
+
+    /**
+     * Extracts and validates the token ID (jti) from a JWT token.
+     *
+     * @param jwt the authenticated JWT token
+     * @return the parsed token JTI UUID
+     * @throws BadCredentialsException if the token is null, jti is
+     * missing/blank, or jti is not a valid UUID
+     */
+    public static UUID extractTokenId(Jwt jwt) {
+        if (jwt == null || jwt.getId() == null || jwt.getId().isBlank()) {
+            throw new BadCredentialsException("Invalid or missing token identifier");
+        }
+        try {
+            return UUID.fromString(jwt.getId().strip());
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Invalid token identifier in authentication token");
+        }
+    }
+
+    /**
+     * Extracts and validates the token ID (jti) from a JWT token.
+     *
+     * @param jwt the authenticated JWT token
+     * @return the parsed token JTI UUID
+     * @throws BadCredentialsException if the token is null, jti is
+     * missing/blank, or jti is not a valid UUID
+     */
+    public static UUID extractJti(Jwt jwt) {
+        return extractTokenId(jwt);
     }
 }
