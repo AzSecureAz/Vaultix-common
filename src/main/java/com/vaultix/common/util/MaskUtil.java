@@ -1,5 +1,8 @@
 package com.vaultix.common.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public final class MaskUtil {
 
     private static final String MASK_REPLACEMENT = "***";
@@ -40,7 +43,8 @@ public final class MaskUtil {
     }
 
     /**
-     * Masks a phone number retaining only the last 4 digits (e.g., ******1234).
+     * Masks a phone number retaining only the last 2 digits matching Google
+     * Account security standards (e.g., +91 ••••••89 or ••••••89).
      *
      * @param phone raw phone number string
      * @return masked phone number or empty string if input is null or blank
@@ -51,12 +55,23 @@ public final class MaskUtil {
         }
 
         String clean = phone.strip();
-        if (clean.length() <= 4) {
+        if (clean.length() <= 2) {
             return clean;
         }
 
-        String lastFour = clean.substring(clean.length() - 4);
-        return "*".repeat(clean.length() - 4) + lastFour;
+        /* Match optional country code (+XX or +XXX) followed by digits */
+        Matcher matcher = Pattern.compile("^(\\+\\d{1,4})\\s*(.*)$").matcher(clean);
+        if (matcher.matches()) {
+            String countryCode = matcher.group(1);
+            String rest = matcher.group(2).replaceAll("\\s+", "");
+            if (rest.length() > 2) {
+                String lastTwo = rest.substring(rest.length() - 2);
+                return countryCode + " ••••••" + lastTwo;
+            }
+        }
+
+        String lastTwo = clean.substring(clean.length() - 2);
+        return "••••••" + lastTwo;
     }
 
     /**
