@@ -188,7 +188,7 @@ String location = context.location();  /* e.g. "San Francisco, US" */
 ### PII Masking Utilities (`MaskUtil`)
 Centralized data-masking routines to prevent accidental leakage of sensitive identifiers in logs, alerts, and previews:
 - **Email Masking**: `MaskUtil.maskEmail("john.doe@company.com")` &rarr; `"j***e@company.com"`. Handles short local parts safely (`a@example.com` &rarr; `"a***@example.com"`).
-- **Phone Masking**: `MaskUtil.maskPhone("+1 (555) 234-5678")` &rarr; `"***************5678"`. Preserves only the last 4 digits.
+- **Phone Masking**: `MaskUtil.maskPhone("+1 (555) 234-5678")` &rarr; `"••••••••78"`. Preserves only the last 2 digits matching Google Account privacy standards, omitting country codes.
 - **Username Masking**: `MaskUtil.maskUsername("johndoe")` &rarr; `"j***e"`. Automatically detects `@` symbols and delegates to `maskEmail`.
 
 ### Fast UUID Parsing & Inspection (`UuidUtils`)

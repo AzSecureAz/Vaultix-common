@@ -1,11 +1,9 @@
 package com.vaultix.common.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public final class MaskUtil {
 
     private static final String MASK_REPLACEMENT = "***";
+    private static final String PHONE_MASK_BULLETS = "••••••••";
 
     private MaskUtil() {
     }
@@ -44,7 +42,8 @@ public final class MaskUtil {
 
     /**
      * Masks a phone number retaining only the last 2 digits matching Google
-     * Account security standards (e.g., +91 ••••••89 or ••••••89).
+     * Account security standards (e.g., ••••••••89), disregarding any country
+     * prefix.
      *
      * @param phone raw phone number string
      * @return masked phone number or empty string if input is null or blank
@@ -59,19 +58,13 @@ public final class MaskUtil {
             return clean;
         }
 
-        /* Match optional country code (+XX or +XXX) followed by digits */
-        Matcher matcher = Pattern.compile("^(\\+\\d{1,4})\\s*(.*)$").matcher(clean);
-        if (matcher.matches()) {
-            String countryCode = matcher.group(1);
-            String rest = matcher.group(2).replaceAll("\\s+", "");
-            if (rest.length() > 2) {
-                String lastTwo = rest.substring(rest.length() - 2);
-                return countryCode + " ••••••" + lastTwo;
-            }
+        String digits = clean.replaceAll("\\D", "");
+        if (digits.length() <= 2) {
+            return clean;
         }
 
-        String lastTwo = clean.substring(clean.length() - 2);
-        return "••••••" + lastTwo;
+        String lastTwo = digits.substring(digits.length() - 2);
+        return PHONE_MASK_BULLETS + lastTwo;
     }
 
     /**
